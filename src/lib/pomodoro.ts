@@ -6,6 +6,19 @@ import { exec } from 'child_process';
 const player = require('play-sound')({});
 
 /**
+ * The single source of truth for the sounds bundled with the extension.
+ * They live in the top-level `sounds/` folder.
+ *
+ * To add a new bundled sound: drop the file into `sounds/`, add its filename
+ * here, and add it to the `enum` list of every `pomodoro.sounds.*` property in
+ * package.json (so it appears in the settings dropdowns).
+ */
+export const BUNDLED_SOUNDS = ['sound1.wav', 'sound2.wav', 'sound3.wav', 'sound4.mp3'];
+
+/** Value used in the sound dropdowns to disable audio for an event. */
+export const NO_SOUND = 'none';
+
+/**
  * Interface for the Pomodoro configuration settings.
  */
 export interface Config {
@@ -17,6 +30,11 @@ export interface Config {
 	autoPauseOnIdle: {
 		enabled: boolean;
 		timeout: number; // in minutes
+	};
+	sounds: {
+		workStart: string;       // returning to work after a break
+		shortBreakStart: string; // a short break begins
+		longBreakStart: string;  // a long break begins
 	};
 }
 
@@ -50,7 +68,8 @@ export class PomodoroManager implements vscode.Disposable {
 	}
 
 	public start() {
-		this.startPomodoro();
+		// The very first work session at launch is silent.
+		this.startPomodoro(false, true);
 	}
 
 	public handleClick() {
@@ -125,12 +144,15 @@ export class PomodoroManager implements vscode.Disposable {
 		}
 	}
 
-	private startPomodoro(isRestart: boolean = false) {
+	private startPomodoro(isRestart: boolean = false, isInitial: boolean = false) {
 		if (!isRestart) {
 			if (this.pomodoroCount % 4 === 0) {
 				this.pomodoroCount = 0;
 			}
-			this.playSound('start');
+			// Silent at launch; otherwise this is a return to work after a break.
+			if (!isInitial) {
+				this.playSound(this.config.sounds.workStart);
+			}
 		}
 		this.isBreak = false;
 		this.isPaused = false;
@@ -148,7 +170,7 @@ export class PomodoroManager implements vscode.Disposable {
 		this.secondsRemaining = isLongBreak ? this.config.longBreakDuration : this.config.shortBreakDuration;
 
 		if (!isRestart) {
-			this.playSound('start');
+			this.playSound(isLongBreak ? this.config.sounds.longBreakStart : this.config.sounds.shortBreakStart);
 		}
 
 		this.startTimer(this.secondsRemaining);
@@ -182,7 +204,6 @@ export class PomodoroManager implements vscode.Disposable {
 
 	private onTimerFinished() {
 		this.stopTimer();
-		this.playSound('end');
 
 		if (this.isBreak) {
 			this.showTimedInformationMessage('🟢 Break is over! Time to get back to work.', 3000);
@@ -268,9 +289,16 @@ export class PomodoroManager implements vscode.Disposable {
 		}
 	}
 	
-	private playSound(sound: 'start' | 'end') {
-		const soundFile = sound === 'start' ? 'break-start-bip.mp3' : 'break-end-bip.mp3';
-		const soundPath = path.join(this.extensionPath, 'sounds', soundFile);
+	/**
+	 * Plays the given sound. `sound` is either a bundled filename (resolved
+	 * inside the extension's `sounds/` folder) or an absolute path to the
+	 * user's own file. The value `'none'` (or empty) disables audio for the event.
+	 */
+	private playSound(sound: string) {
+		const soundPath = this.resolveSoundPath(sound);
+		if (!soundPath) {
+			return;
+		}
 
 		player.play(soundPath, (err: any) => {
 			if (err) {
@@ -279,6 +307,21 @@ export class PomodoroManager implements vscode.Disposable {
 				exec(command);
 			}
 		});
+	}
+
+	/**
+	 * Resolves a configured sound value to an absolute file path, or `undefined`
+	 * if the event should be silent.
+	 */
+	private resolveSoundPath(sound: string): string | undefined {
+		if (!sound || sound === NO_SOUND) {
+			return undefined;
+		}
+		// Allow users to point a setting at their own sound file anywhere on disk.
+		if (path.isAbsolute(sound)) {
+			return sound;
+		}
+		return path.join(this.extensionPath, 'sounds', sound);
 	}
 	
 	private readableNumber(forNotification: boolean = false): string {

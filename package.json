@@ -2,7 +2,7 @@
   "name": "pomodoro-for-dev",
   "displayName": "Pomodoro for Dev",
   "description": "Pomodoro is a Visual Studio Code extension that boosts productivity using the Pomodoro technique. It features a customizable clock in the status bar, helping you work in focused intervals with regular breaks. Enhance your coding sessions with Pomodoro.",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "publisher": "mbparvezme",
   "engines": {
     "vscode": "^1.91.0"
@@ -65,6 +65,42 @@
           "type": "number",
           "default": 3,
           "description": "The time in minutes of inactivity before the timer is auto-paused."
+        },
+        "pomodoro.sounds.shortBreakStart": {
+          "type": "string",
+          "enum": [
+            "none",
+            "sound1.wav",
+            "sound2.wav",
+            "sound3.wav",
+            "sound4.mp3"
+          ],
+          "default": "sound1.wav",
+          "description": "Sound played when a short break begins. Pick a bundled sound, choose 'none' to stay silent, or type an absolute path to your own sound file."
+        },
+        "pomodoro.sounds.longBreakStart": {
+          "type": "string",
+          "enum": [
+            "none",
+            "sound1.wav",
+            "sound2.wav",
+            "sound3.wav",
+            "sound4.mp3"
+          ],
+          "default": "sound2.wav",
+          "description": "Sound played when a long break begins. Pick a bundled sound, choose 'none' to stay silent, or type an absolute path to your own sound file."
+        },
+        "pomodoro.sounds.workStart": {
+          "type": "string",
+          "enum": [
+            "none",
+            "sound1.wav",
+            "sound2.wav",
+            "sound3.wav",
+            "sound4.mp3"
+          ],
+          "default": "sound4.mp3",
+          "description": "Sound played when returning to work after a break (silent at launch). Pick a bundled sound, choose 'none' to stay silent, or type an absolute path to your own sound file."
         }
       }
     },

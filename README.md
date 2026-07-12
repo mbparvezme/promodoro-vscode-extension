@@ -20,7 +20,7 @@ The timer runs directly in your status bar, giving you an at-a-glance view of yo
 * **Confirmation on Restart**: An optional confirmation dialog to prevent accidental session restarts.
 * **Auto-Pause on Idle**: The timer can automatically pause itself if you're inactive in VS Code for a configured amount of time.
 * **Auto-Resume on Focus**: After being auto-paused, the timer will automatically resume as soon as you return to VS Code.
-* **Audio Notifications**: Sound cues signal the start and end of each work or break session.
+* **Configurable Audio Cues**: Distinct sounds mark the start of a short break, a long break, and your return to work. Pick a bundled sound per event from a dropdown, silence any event, or point a setting at your own sound file.
 * **Command Palette Integration**: Control the timer using VS Code commands.
 
 ## User Guide
@@ -73,9 +73,30 @@ You can customize all features of the extension to fit your workflow.
     "pomodoro.autoPauseOnIdle.enabled": false,
 
     // The time in minutes of inactivity before the timer is auto-paused.
-    "pomodoro.autoPauseOnIdle.timeout": 3
+    "pomodoro.autoPauseOnIdle.timeout": 3,
+
+    // --- Sound Settings ---
+
+    // Sound played when a short break begins.
+    "pomodoro.sounds.shortBreakStart": "sound1.wav",
+
+    // Sound played when a long break begins.
+    "pomodoro.sounds.longBreakStart": "sound2.wav",
+
+    // Sound played when returning to work after a break (silent at launch).
+    "pomodoro.sounds.workStart": "sound4.mp3"
 }
 ```
+
+### Sounds
+
+Each sound event has its own setting with a dropdown of the bundled sounds. You can:
+
+* **Pick a bundled sound** — choose any of `sound1.wav`, `sound2.wav`, `sound3.wav`, or `sound4.mp3` from the dropdown.
+* **Silence an event** — choose `none`.
+* **Use your own sound** — type an absolute path to a sound file on your machine (e.g. `"C:\\Sounds\\chime.wav"` or `"/home/me/chime.mp3"`).
+
+The extension stays silent for the very first work session when VS Code launches.
 
 ## Available Commands
 
@@ -109,6 +130,6 @@ Show your support for the project:
 ## For more information
 
 * [M B Parvez](https://www.mbparvez.me)
-* [Gosoft](https://www.gosoft.io)
+* [Gosoft](https://www.gosoft.pro)
 
 **Enjoy!**

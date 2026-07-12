@@ -18,6 +18,11 @@ function loadConfig(): Config {
 		autoPauseOnIdle: {
 			enabled: userConfig.get<boolean>('autoPauseOnIdle.enabled', false),
 			timeout: userConfig.get<number>('autoPauseOnIdle.timeout', 2)
+		},
+		sounds: {
+			workStart: userConfig.get<string>('sounds.workStart', 'sound4.mp3'),
+			shortBreakStart: userConfig.get<string>('sounds.shortBreakStart', 'sound1.wav'),
+			longBreakStart: userConfig.get<string>('sounds.longBreakStart', 'sound2.wav')
 		}
 	};
 }
