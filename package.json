@@ -2,7 +2,7 @@
   "name": "pomodoro-for-dev",
   "displayName": "Pomodoro for Dev",
   "description": "Pomodoro is a Visual Studio Code extension that boosts productivity using the Pomodoro technique. It features a customizable clock in the status bar, helping you work in focused intervals with regular breaks. Enhance your coding sessions with Pomodoro.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publisher": "mbparvezme",
   "engines": {
     "vscode": "^1.91.0"
@@ -46,10 +46,20 @@
           "default": 20,
           "description": "The duration of a long break in minutes (after 4 Pomodoros)."
         },
+        "pomodoro.showStatusDot": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the status icon (🟢 work / 🔴 break / ⏸️ paused) in the status bar."
+        },
+        "pomodoro.showStatusLabel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the text label (Work / Break / Paused) in the status bar."
+        },
         "pomodoro.pomodoroClock": {
           "type": "boolean",
           "default": true,
-          "description": "Show the countdown clock in the status bar."
+          "description": "Show the countdown clock (mm:ss) in the status bar."
         },
         "pomodoro.confirmOnRestart": {
           "type": "boolean",

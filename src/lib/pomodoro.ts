@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 
 // You must run 'npm install play-sound' for this to work.
 const player = require('play-sound')({});
@@ -25,7 +25,9 @@ export interface Config {
 	pomodoroDuration: number;
 	shortBreakDuration: number;
 	longBreakDuration: number;
-	pomodoroClock: boolean;
+	showStatusDot: boolean;   // the 🟢 / 🔴 / ⏸️ status icon
+	showStatusLabel: boolean; // the "Work" / "Break" / "Paused" text label
+	pomodoroClock: boolean;   // the mm:ss countdown clock text
 	confirmOnRestart: boolean;
 	autoPauseOnIdle: {
 		enabled: boolean;
@@ -218,20 +220,27 @@ export class PomodoroManager implements vscode.Disposable {
 	private updateStatusBar() {
 		const minutes = Math.floor(this.secondsRemaining / 60).toString().padStart(2, '0');
 		const seconds = (this.secondsRemaining % 60).toString().padStart(2, '0');
+		const clock = `${minutes}:${seconds}`;
 
-		let text: string;
+		let icon: string;
+		let label: string;
 		if (this.isPaused) {
-			text = `⏸️ Paused ${minutes}:${seconds}`;
+			icon = '⏸️';
+			label = 'Paused';
 		} else {
-			const icon = this.isBreak ? '🔴' : '🟢';
-			const type = this.isBreak ? `${this.readableNumber()} Break` : 'Work';
-			text = `${icon} ${type}`;
-			if (this.config.pomodoroClock) {
-				text += ` ${minutes}:${seconds}`;
-			}
+			icon = this.isBreak ? '🔴' : '🟢';
+			label = this.isBreak ? `${this.readableNumber()} Break` : 'Work';
 		}
 
-		this.statusBarItem.text = text;
+		// Each piece is independently toggleable via settings.
+		const parts: string[] = [];
+		if (this.config.showStatusDot) { parts.push(icon); }
+		if (this.config.showStatusLabel) { parts.push(label); }
+		if (this.config.pomodoroClock) { parts.push(clock); }
+
+		// Never let the item go blank — an empty status bar item is invisible
+		// and can't be clicked to pause/restart. Fall back to the icon.
+		this.statusBarItem.text = parts.length > 0 ? parts.join(' ') : icon;
 		this.statusBarItem.color = this.isBreak
 			? new vscode.ThemeColor('pomodoro.breakTextColor')
 			: new vscode.ThemeColor('statusBar.foreground');
@@ -300,12 +309,50 @@ export class PomodoroManager implements vscode.Disposable {
 			return;
 		}
 
+		// On Windows, `play-sound` falls back to running `powershell "<file>"`,
+		// which resolves the audio file through its file association and pops
+		// open the default media player app instead of playing in the
+		// background. Play it natively (silently) instead.
+		if (process.platform === 'win32') {
+			this.playSoundWindows(soundPath);
+			return;
+		}
+
 		player.play(soundPath, (err: any) => {
 			if (err) {
 				console.error(`Pomodoro Error: Could not play sound at ${soundPath}.`, err);
-				const command = process.platform === 'win32' ? 'cmd /c echo \x07' : 'echo -e "\a"';
-				exec(command);
+				exec('printf "\\a"');
 			}
+		});
+	}
+
+	/**
+	 * Plays a sound on Windows without opening any GUI player. Uses the Win32
+	 * MCI API (`winmm.dll`) via PowerShell, which plays both `.wav` and `.mp3`
+	 * headlessly. `play ... wait` blocks the PowerShell process for the duration
+	 * of playback so the audio isn't cut off. The script is passed as an
+	 * `-EncodedCommand` (base64 UTF-16LE) to avoid any shell quote-injection
+	 * around the (possibly user-supplied) file path.
+	 */
+	private playSoundWindows(soundPath: string) {
+		// Single-quoted PowerShell string literal; escape embedded single quotes.
+		const psPath = soundPath.replace(/'/g, "''");
+		const script = [
+			`Add-Type -TypeDefinition 'using System.Runtime.InteropServices; using System.Text; public class PomoMci { [DllImport("winmm.dll", CharSet=CharSet.Auto)] public static extern int mciSendString(string cmd, StringBuilder ret, int retLen, System.IntPtr h); }';`,
+			`$p = '${psPath}';`,
+			`[PomoMci]::mciSendString('open "' + $p + '" alias pomo', $null, 0, [System.IntPtr]::Zero) | Out-Null;`,
+			`[PomoMci]::mciSendString('play pomo wait', $null, 0, [System.IntPtr]::Zero) | Out-Null;`,
+			`[PomoMci]::mciSendString('close pomo', $null, 0, [System.IntPtr]::Zero) | Out-Null;`
+		].join('\n');
+		const encoded = Buffer.from(script, 'utf16le').toString('base64');
+
+		const child = spawn(
+			'powershell',
+			['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded],
+			{ windowsHide: true, stdio: 'ignore' }
+		);
+		child.on('error', (err) => {
+			console.error(`Pomodoro Error: Could not play sound at ${soundPath}.`, err);
 		});
 	}
 

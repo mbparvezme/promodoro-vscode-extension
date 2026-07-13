@@ -13,6 +13,8 @@ function loadConfig(): Config {
 		pomodoroDuration: userConfig.get<number>('pomodoroDuration', 25) * 60,
 		shortBreakDuration: userConfig.get<number>('shortBreakDuration', 5) * 60,
 		longBreakDuration: userConfig.get<number>('longBreakDuration', 20) * 60,
+		showStatusDot: userConfig.get<boolean>('showStatusDot', true),
+		showStatusLabel: userConfig.get<boolean>('showStatusLabel', true),
 		pomodoroClock: userConfig.get<boolean>('pomodoroClock', true),
 		confirmOnRestart: userConfig.get<boolean>('confirmOnRestart', true),
 		autoPauseOnIdle: {

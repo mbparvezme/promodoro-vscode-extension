@@ -2,6 +2,17 @@
 
 All notable changes to the "pomodoro" extension will be documented in this file.
 
+## [2.0.1]
+
+### Added
+- Independent status bar visibility toggles:
+  - `pomodoro.showStatusDot` (default `true`) — the 🟢 / 🔴 / ⏸️ status icon.
+  - `pomodoro.showStatusLabel` (default `true`) — the Work / Break / Paused text label.
+- `pomodoro.pomodoroClock` now controls the clock in every state (including while paused); turning all three pieces off keeps the icon so the item stays clickable.
+
+### Fixed
+- On Windows, playing a notification sound no longer pops open the default media player app. Audio now plays silently in the background (via the Win32 MCI API) for both `.wav` and `.mp3` files.
+
 ## [2.0.0]
 
 ### Added

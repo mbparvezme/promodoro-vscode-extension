@@ -14,6 +14,7 @@ The timer runs directly in your status bar, giving you an at-a-glance view of yo
 
 * **Customizable Timers**: Set custom durations for your work sessions (Pomodoros), short breaks, and long breaks.
 * **Dynamic Status Bar**: An elegant status bar item that shows the current session type (Work/Break), remaining time, and status icons.
+* **Configurable Status Bar Display**: Independently toggle the status **dot** (🟢/🔴/⏸️), the **text label** (Work/Break/Paused), and the **countdown clock** (mm:ss) to make the item as detailed or as minimal as you like.
 * **Interactive Controls**:
     * **Single-click** the status bar item to manually pause or resume the timer.
     * **Double-click** the status bar item to restart the current session.
@@ -60,7 +61,15 @@ You can customize all features of the extension to fit your workflow.
     // The duration of a long break in minutes (after 4 Pomodoros).
     "pomodoro.longBreakDuration": 20,
 
-    // Show the countdown clock in the status bar.
+    // --- Status Bar Display Settings ---
+
+    // Show the status icon (🟢 work / 🔴 break / ⏸️ paused) in the status bar.
+    "pomodoro.showStatusDot": true,
+
+    // Show the text label (Work / Break / Paused) in the status bar.
+    "pomodoro.showStatusLabel": true,
+
+    // Show the countdown clock (mm:ss) in the status bar.
     "pomodoro.pomodoroClock": true,
 
     // Show a confirmation dialog before restarting a session with a double-click.
@@ -87,6 +96,16 @@ You can customize all features of the extension to fit your workflow.
     "pomodoro.sounds.workStart": "sound4.mp3"
 }
 ```
+
+### Status Bar Display
+
+The status bar item is made of three independent pieces, each with its own toggle:
+
+* **`pomodoro.showStatusDot`** — the status icon (🟢 work, 🔴 break, ⏸️ paused).
+* **`pomodoro.showStatusLabel`** — the text label (Work, Break, Paused).
+* **`pomodoro.pomodoroClock`** — the countdown clock (mm:ss).
+
+Mix and match to taste — for example, keep just the dot for a minimal indicator, or the dot and clock without the label. If you turn all three off, the icon is kept so the item stays visible and clickable.
 
 ### Sounds
 
